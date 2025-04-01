@@ -10,7 +10,7 @@ enum IsDone {
 
 
 /// **Function to get user input and return it as a trimmed string**
-fn get_user_input() -> String {
+fn get_command() -> String {
     let mut command_input = String::new();
     
     print!("todo//> ");
