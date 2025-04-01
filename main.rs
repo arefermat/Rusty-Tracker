@@ -63,7 +63,15 @@ fn main() {
                 continue;
             }
         };
-
+        /* 
+           new subject name due_date time_estimate
+           edit -(a/s) name new
+           view -(a/s) name
+           mark name (done/incomplete{%})
+           resource subject (add url)
+           remove -(a/s) name
+           add subject_name color
+        */
         match command.as_str() {
             "new" => {
                 let name = get_next_arg(&mut parts, "Please provide an assignment name.");
@@ -77,34 +85,7 @@ fn main() {
                 };
 
                 new_assignment(name, due_date, time_estimate);
-            }
-            "view" => {
-                let name = get_next_arg(&mut parts, "Please provide an assignment name.");
-                view_assignment(name);
-            }
-            "mark" => {
-                let name = get_next_arg(&mut parts, "Please provide an assignment name.");
-                let status = match get_next_arg(&mut parts, "Please provide 'done' or 'incomplete'.").to_lowercase().as_str() {
-                    "done" => IsDone::Done,
-                    "incomplete" => IsDone::Incomplete,
-                    _ => {
-                        println!("Invalid status. Use 'done' or 'incomplete'.");
-                        continue;
-                    }
-                };
-
-                mark_assignment(name, status);
-            }
-            "resources" => {
-                let subject = get_next_arg(&mut parts, "Please provide a subject.");
-                resources(subject);
-            }
-            "exit" => {
-                println!("Exiting...");
-                break;
-            }
-            _ => println!("Invalid command. Try again."),
         }
-    }
+    }           
 }
 
