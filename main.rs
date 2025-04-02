@@ -2,19 +2,29 @@ use std::io::{self, Write};
 use std::collections::HashMap;
 
 #[derive(Debug)]
+// enum that stores 2 states, done or incomplete
+// let assignment: IsDone = IsDone::Done
 enum IsDone {
     Done,
     Incomplete,
 }
 
 #[derive(Debug, PartialEq)]
+//enun that stores 3 states, assignment, subject, or none
+// none is when you dont enter anything correct, itll still return an object
 enum Object {
     Assignment,
     Subject,
     None,
 }
 
-
+// Struct groups info or data into one name
+//let brain_pop: Assignment = Assignment {
+//name : "brainpop"
+//subject : "Science"
+//due_date : "April_5th"
+//e_time : 10
+//}
 struct Assignment {
     name : String,
     subject : String,
@@ -27,6 +37,8 @@ struct Subject {
     color : String,
 }
 
+
+//Creates a HachMap and inserts values for color codes to control text color
 fn get_colors() -> HashMap<&'static str, &'static str> {
     let mut colors = HashMap::new();
     colors.insert("black", "\x1b[30m");
@@ -41,7 +53,7 @@ fn get_colors() -> HashMap<&'static str, &'static str> {
     colors
 }
 
-
+//Takes input and trims whitespace
 fn get_command() -> String {
     let mut command_input = String::new();
     
@@ -49,15 +61,14 @@ fn get_command() -> String {
     io::stdout().flush().unwrap(); 
 
     io::stdin().read_line(&mut command_input).unwrap();
-    command_input.trim().to_string()
+    command_input.trim().to_string() // "         hello world     " -> "hello world"
 }
 
-
-fn get_next_arg<'a, I>(iter: &mut I, error_message: &str) -> String
-where
-    I: Iterator<Item = &'a str>,
+// Takes a iterator and takes the next value of it returning it as a String
+fn get_next_arg<'a, I>(iter: &mut I, error_message: &str) -> String 
+where I: Iterator<Item = &'a str>,
 {
-    match iter.next() {
+    mahtc iter.next() {
         Some(arg) => arg.to_string(),
         None => {
             println!("{}", error_message);
@@ -137,6 +148,15 @@ fn main() {
                 let new_name = get_next_arg(&mut parts, "Please enter a new name");
                 
                 edit(object, name, new_name)
+            },
+            "view" => {
+                let object = match get_next_arg(&mut parts, "Please enter either '-a' or '-s'").as_str() {
+                    "-a" => Object::Assignment,
+                    "-s" => Object::Subject,
+                    _ => Object::None,
+                };
+                let name = get_next_arg(&mut parts, "Please enter an assignment name");
+                view_assignment(object, name);
             }
 
 
