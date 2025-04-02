@@ -1,6 +1,5 @@
-
 use std::io::{self, Write};
-
+use std::collections::HashMap;
 
 #[derive(Debug)]
 enum IsDone {
@@ -8,19 +7,52 @@ enum IsDone {
     Incomplete,
 }
 
+#[derive(Debug, PartialEq)]
+enum Object {
+    Assignment,
+    Subject,
+    None,
+}
 
-/// **Function to get user input and return it as a trimmed string**
+
+struct Assignment {
+    name : String,
+    subject : String,
+    due_date : String,
+    e_time : i32,
+}
+
+struct Subject {
+    name : String,
+    color : String,
+}
+
+fn get_colors() -> HashMap<&'static str, &'static str> {
+    let mut colors = HashMap::new();
+    colors.insert("black", "\x1b[30m");
+    colors.insert("red", "\x1b[31m");
+    colors.insert("green", "\x1b[32m");
+    colors.insert("yellow", "\x1b[33m");
+    colors.insert("blue", "\x1b[34m");
+    colors.insert("magenta", "\x1b[35m");
+    colors.insert("cyan", "\x1b[36m");
+    colors.insert("white", "\x1b[37m");
+    colors.insert("reset", "\x1b[0m"); 
+    colors
+}
+
+
 fn get_command() -> String {
     let mut command_input = String::new();
     
     print!("todo//> ");
-    io::stdout().flush().unwrap(); // Ensure the prompt appears before input
+    io::stdout().flush().unwrap(); 
 
     io::stdin().read_line(&mut command_input).unwrap();
-    command_input.trim().to_string() // Trim whitespace and return as String
+    command_input.trim().to_string()
 }
 
-/// **Function to get the next argument from an iterator, or print an error and restart loop**
+
 fn get_next_arg<'a, I>(iter: &mut I, error_message: &str) -> String
 where
     I: Iterator<Item = &'a str>,
@@ -29,31 +61,39 @@ where
         Some(arg) => arg.to_string(),
         None => {
             println!("{}", error_message);
-            get_user_input() // Restart input collection if missing argument
+            get_command() 
         }
     }
 }
 
 // Placeholder functions
-fn new_assignment(name: String, due_date: String, time_estimate: i32) {
-    println!("Creating new assignment '{}' due on {} with estimated {} minutes.", name, due_date, time_estimate);
+fn new_assignment(subject: String, name: String, due_date: String, time_estimate: i32) {
+    println!("Creating new assignment {} with subject {} due on {} with estimated {} minutes", name, subject, due_date, time_estimate);
 }
 
-fn view_assignment(name: String) {
-    println!("Viewing assignment '{}'.", name);
+fn edit(object: Object, name: String, new_name: String) {
+    if object == Object::None {
+        println!("Please enter either '-a' or '-s'");
+        
+    }
+    println!("Changing {:?} named {} to {}", object, name, new_name);
+}
+
+fn view_assignment(object: Object, name: String) {
+    println!("Viewing assignment {}", name);
 }
 
 fn mark_assignment(name: String, status: IsDone) {
-    println!("Marking assignment '{}' as {:?}", name, status);
+    println!("Marking assignment {} as {:?}", name, status);
 }
 
 fn resources(subject: String) {
-    println!("Providing resources for '{}'.", subject);
+    println!("Providing resources for {}", subject);
 }
 
 fn main() {
     loop {
-        let input = get_user_input();
+        let input = get_command();
         let mut parts = input.split_whitespace();
         
         let command = match parts.next() {
@@ -74,6 +114,7 @@ fn main() {
         */
         match command.as_str() {
             "new" => {
+                let subject = get_next_arg(&mut parts, "Please provide a valid subject");
                 let name = get_next_arg(&mut parts, "Please provide an assignment name.");
                 let due_date = get_next_arg(&mut parts, "Please provide a due date.");
                 let time_estimate: i32 = match get_next_arg(&mut parts, "Please provide a time estimate.").parse() {
@@ -84,8 +125,23 @@ fn main() {
                     }
                 };
 
-                new_assignment(name, due_date, time_estimate);
-        }
-    }           
-}
+                new_assignment(subject, name, due_date, time_estimate);
+            },
+            "edit" => {
+                let object = match get_next_arg(&mut parts, "Please enter either '-a' or '-s'").as_str() {
+                    "-a" => Object::Assignment,
+                    "-s" => Object::Subject,
+                    _ => Object::None,
+                };
+                let name = get_next_arg(&mut parts, "Please enter a name that you want to edit");
+                let new_name = get_next_arg(&mut parts, "Please enter a new name");
+                
+                edit(object, name, new_name)
+            }
 
+
+
+            _ => println!("Unknown command")
+        }         
+    }
+}
