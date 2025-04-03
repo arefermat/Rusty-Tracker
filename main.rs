@@ -7,6 +7,7 @@ use std::collections::HashMap;
 enum IsDone {
     Done,
     Incomplete,
+    None
 }
 
 #[derive(Debug, PartialEq)]
@@ -102,6 +103,10 @@ fn resources(subject: String) {
     println!("Providing resources for {}", subject);
 }
 
+fn remove(object: Object, name: String) {
+    println!("Removing {:?} named {}", object, name);
+}
+
 fn main() {
     loop {
         let input = get_command();
@@ -157,6 +162,15 @@ fn main() {
                 };
                 let name = get_next_arg(&mut parts, "Please enter an assignment name");
                 view_assignment(object, name);
+            }, 
+            "mark" => {
+                let name = get_next_arg(&mut parts, "Please enter an assignment name");
+                let is_done = match get_next_arg(&mut parts, "Please enter either done or incomplete") {
+                    "done" => IsDone::Done,
+                    "incomplete" => IsDone::Incomplete,
+                    _ => IsDone::None,
+                };
+                mark_assignment(name, is_done);
             }
 
 
