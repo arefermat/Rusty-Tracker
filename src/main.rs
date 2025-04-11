@@ -1,5 +1,8 @@
-use std::io::{self, Write};
+use std::io::{self, Write, stdout};
 use std::collections::HashMap;
+use crossterm::{execute, terminal::{Clear, ClearType}};
+
+
 
 #[derive(Debug)]
 // enum that stores 2 states, done or incomplete
@@ -26,6 +29,8 @@ enum Object {
 //due_date : "April_5th"
 //e_time : 10
 //}
+
+#[allow(dead_code)]
 struct Assignment {
     name : String,
     subject : String,
@@ -33,12 +38,13 @@ struct Assignment {
     e_time : i32,
 }
 
+#[allow(dead_code)]
 struct Subject {
     name : String,
     color : String,
 }
 
-
+#[allow(dead_code)]
 //Creates a HachMap and inserts values for color codes to control text color
 fn get_colors() -> HashMap<&'static str, &'static str> {
     let mut colors = HashMap::new();
@@ -52,6 +58,10 @@ fn get_colors() -> HashMap<&'static str, &'static str> {
     colors.insert("white", "\x1b[37m");
     colors.insert("reset", "\x1b[0m"); 
     colors
+}
+
+fn clear_terminal() {
+    execute!(stdout(), Clear(ClearType::All)).unwrap();
 }
 
 //Takes input and trims whitespace
@@ -92,7 +102,7 @@ fn edit(object: Object, name: String, new_name: String) {
 }
 
 fn view_assignment(object: Object, name: String) {
-    println!("Viewing assignment {}", name);
+    println!("Viewing {:?} {}",object, name);
 }
 
 fn mark_assignment(name: String, status: IsDone) {
@@ -109,10 +119,10 @@ fn remove(object: Object, name: String) {
 
 fn main() {
     loop {
-        let input = get_command();
+        let input: String = get_command();
         let mut parts = input.split_whitespace();
         
-        let command = match parts.next() {
+        let command: String = match parts.next() {
             Some(cmd) => cmd.to_lowercase(),
             None => {
                 println!("Invalid input. Please try again.");
@@ -176,10 +186,20 @@ fn main() {
                 let subject = get_next_arg(&mut parts, "Please enter a subject");
 
                 get_resources(subject);
+            },
+            "remove" => {
+                let object: Object = match get_next_arg(&mut parts, "Please enter either '-a' or '-s'").as_str() {
+                    "-a" => Object::Assignment,
+                    "-s" => Object::Subject,
+                    _ => Object::None,
+                };
+                let name: String = get_next_arg(&mut parts, "Please enter a name");
+
+                remove(object, name);
             }
 
 
-
+            "clear" => clear_terminal(),
             _ => println!("Unknown command")
         };         
     };
