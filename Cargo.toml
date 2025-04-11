@@ -1,0 +1,6 @@
+[package]
+name = "todo_cli" # the name of the package
+version = "0.1.0"    # the current version, obeying semver
+
+
+[dependencies]
