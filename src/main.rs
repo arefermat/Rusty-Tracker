@@ -99,7 +99,7 @@ fn mark_assignment(name: String, status: IsDone) {
     println!("Marking assignment {} as {:?}", name, status);
 }
 
-fn resources(subject: String) {
+fn get_resources(subject: String) {
     println!("Providing resources for {}", subject);
 }
 
@@ -148,7 +148,6 @@ fn main() {
                     "-a" => Object::Assignment,
                     "-s" => Object::Subject,
                     _ => Object::None,
-                    },
                 };
                 let name = get_next_arg(&mut parts, "Please enter a name that you want to edit");
                 let new_name = get_next_arg(&mut parts, "Please enter a new name");
@@ -160,7 +159,6 @@ fn main() {
                     "-a" => Object::Assignment,
                     "-s" => Object::Subject,
                     _ => Object::None,
-                    },
                 };
                 let name = get_next_arg(&mut parts, "Please enter an assignment name");
                 view_assignment(object, name);
@@ -168,18 +166,21 @@ fn main() {
             "mark" => {
                 let name = get_next_arg(&mut parts, "Please enter an assignment name");
                 let status = match get_next_arg(&mut parts, "Please enter either done or incomplete").as_str() {
-                    Some(stat) => match stat {
-                        "done" => IsDone::Done,
-                        "incomplete" => IsDone::Incomplete,
-                    },
-                    None => println!("Please enter either done or incomplete"),
+                    "done" => IsDone::Done,
+                    "incomplete" => IsDone::Incomplete,
+                    _ => IsDone::None
                 };
-                mark_assignment(name, is_done);
+                mark_assignment(name, status);
+            },
+            "resource" => {
+                let subject = get_next_arg(&mut parts, "Please enter a subject");
+
+                get_subject
             }
 
 
 
             _ => println!("Unknown command")
-        }         
-    }
+        };         
+    };
 }
