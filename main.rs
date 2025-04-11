@@ -6,8 +6,7 @@ use std::collections::HashMap;
 // let assignment: IsDone = IsDone::Done
 enum IsDone {
     Done,
-    Incomplete,
-    None
+    Incomplete
 }
 
 #[derive(Debug, PartialEq)]
@@ -16,7 +15,6 @@ enum IsDone {
 enum Object {
     Assignment,
     Subject,
-    None,
 }
 
 // Struct groups info or data into one name
@@ -145,9 +143,11 @@ fn main() {
             },
             "edit" => {
                 let object = match get_next_arg(&mut parts, "Please enter either '-a' or '-s'").as_str() {
-                    "-a" => Object::Assignment,
-                    "-s" => Object::Subject,
-                    _ => Object::None,
+                    Some(obj) => match obj {
+                        "-a" => Object::Assignment,
+                        "-s" => Object::Subject,
+                    },
+                    None => println!("Please enter either -a or -s"),
                 };
                 let name = get_next_arg(&mut parts, "Please enter a name that you want to edit");
                 let new_name = get_next_arg(&mut parts, "Please enter a new name");
@@ -156,19 +156,23 @@ fn main() {
             },
             "view" => {
                 let object = match get_next_arg(&mut parts, "Please enter either '-a' or '-s'").as_str() {
-                    "-a" => Object::Assignment,
-                    "-s" => Object::Subject,
-                    _ => Object::None,
+                    Some(obj) => match obj {
+                        "-a" => Object::Assignment,
+                        "-s" => Object::Subject,
+                    },
+                    None => println!("Please enter either -a or -s"),
                 };
                 let name = get_next_arg(&mut parts, "Please enter an assignment name");
                 view_assignment(object, name);
             }, 
             "mark" => {
                 let name = get_next_arg(&mut parts, "Please enter an assignment name");
-                let is_done = match get_next_arg(&mut parts, "Please enter either done or incomplete") {
-                    "done" => IsDone::Done,
-                    "incomplete" => IsDone::Incomplete,
-                    _ => IsDone::None,
+                let status = match get_next_arg(&mut parts, "Please enter either done or incomplete").as_str() {
+                    Some(stat) => match stat {
+                        "done" => IsDone::Done,
+                        "incomplete" => IsDone::Incomplete,
+                    },
+                    None => println!("Please enter either done or incomplete"),
                 };
                 mark_assignment(name, is_done);
             }
