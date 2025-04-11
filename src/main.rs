@@ -69,7 +69,7 @@ fn get_command() -> String {
 fn get_next_arg<'a, I>(iter: &mut I, error_message: &str) -> String 
 where I: Iterator<Item = &'a str>,
 {
-    mahtc iter.next() {
+    match iter.next() {
         Some(arg) => arg.to_string(),
         None => {
             println!("{}", error_message);
@@ -175,7 +175,7 @@ fn main() {
             "resource" => {
                 let subject = get_next_arg(&mut parts, "Please enter a subject");
 
-                get_subject
+                get_subject(subject);
             }
 
 
