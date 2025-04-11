@@ -175,7 +175,7 @@ fn main() {
             "resource" => {
                 let subject = get_next_arg(&mut parts, "Please enter a subject");
 
-                get_subject(subject);
+                get_resources(subject);
             }
 
 
