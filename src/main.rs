@@ -6,7 +6,8 @@ use std::collections::HashMap;
 // let assignment: IsDone = IsDone::Done
 enum IsDone {
     Done,
-    Incomplete
+    Incomplete,
+    None
 }
 
 #[derive(Debug, PartialEq)]
@@ -15,6 +16,7 @@ enum IsDone {
 enum Object {
     Assignment,
     Subject,
+    None,
 }
 
 // Struct groups info or data into one name
@@ -143,11 +145,10 @@ fn main() {
             },
             "edit" => {
                 let object = match get_next_arg(&mut parts, "Please enter either '-a' or '-s'").as_str() {
-                    Some(obj) => match obj {
-                        "-a" => Object::Assignment,
-                        "-s" => Object::Subject,
+                    "-a" => Object::Assignment,
+                    "-s" => Object::Subject,
+                    _ => Object::None,
                     },
-                    None => println!("Please enter either -a or -s"),
                 };
                 let name = get_next_arg(&mut parts, "Please enter a name that you want to edit");
                 let new_name = get_next_arg(&mut parts, "Please enter a new name");
@@ -156,11 +157,10 @@ fn main() {
             },
             "view" => {
                 let object = match get_next_arg(&mut parts, "Please enter either '-a' or '-s'").as_str() {
-                    Some(obj) => match obj {
-                        "-a" => Object::Assignment,
-                        "-s" => Object::Subject,
+                    "-a" => Object::Assignment,
+                    "-s" => Object::Subject,
+                    _ => Object::None,
                     },
-                    None => println!("Please enter either -a or -s"),
                 };
                 let name = get_next_arg(&mut parts, "Please enter an assignment name");
                 view_assignment(object, name);
