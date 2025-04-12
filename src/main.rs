@@ -1,5 +1,6 @@
 use std::io::{self, Write, stdout};
 use std::collections::HashMap;
+use crossterm::style::Color;
 use crossterm::{execute, terminal::{Clear, ClearType}};
 
 
@@ -41,7 +42,7 @@ struct Assignment {
 #[allow(dead_code)]
 struct Subject {
     name : String,
-    color : String,
+    color : HashMap<&'static str, &'static str>,
 }
 
 #[allow(dead_code)]
