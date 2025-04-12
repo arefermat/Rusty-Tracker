@@ -1,6 +1,5 @@
 use std::io::{self, Write, stdout};
 use std::collections::HashMap;
-use crossterm::style::Color;
 use crossterm::{execute, terminal::{Clear, ClearType}};
 
 
