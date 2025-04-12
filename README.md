@@ -11,5 +11,5 @@ This command creates a new assignment assimged to an subject with a due date and
 3. **Due date** : Enter a due date however you like 
 4. **Time estimate** : How long it will take to complete the assignment (i32)
 
-Example : new Science Assignment April_5th 10
+**Example** : new Science Assignment April_5th 10
 
