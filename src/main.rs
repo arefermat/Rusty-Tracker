@@ -41,7 +41,7 @@ struct Assignment {
 #[allow(dead_code)]
 struct Subject {
     name : String,
-    color : HashMap<&'static str, &'static str>,
+    color : String,
 }
 
 #[allow(dead_code)]
@@ -62,6 +62,11 @@ fn get_colors() -> HashMap<&'static str, &'static str> {
 
 fn clear_terminal() {
     execute!(stdout(), Clear(ClearType::All)).unwrap();
+}
+
+#[allow(dead_code)]
+fn help() {
+    println!("new, edit, view, mark, resource, remove, add. Type cmdhelp command to see how to use that specific command, e.g. cmdhelp new");
 }
 
 //Takes input and trims whitespace
