@@ -1,6 +1,8 @@
 use std::io::{self, Write, stdout};
 use std::collections::HashMap;
 use crossterm::{execute, terminal::{Clear, ClearType}};
+use serde::{Serialize, Deserialize};
+use std::fs;
 
 
 
@@ -18,8 +20,7 @@ enum Object {
     None,
 }
 
-
-#[allow(dead_code)]
+#[derive(Serialize, Deserialize)]
 struct Assignment {
     name : String,
     subject : String,
@@ -27,13 +28,12 @@ struct Assignment {
     e_time : i32,
 }
 
-#[allow(dead_code)]
+#[derive(Serialize, Deserialize)]
 struct Subject {
     name : String,
-    color : String,
+    color : &str,
 }
 
-#[allow(dead_code)]
 //Creates a HashMap and inserts values for color codes to control text color
 fn get_colors() -> HashMap<&'static str, &'static str> {
     let mut colors = HashMap::new();
@@ -53,7 +53,6 @@ fn clear_terminal() {
     execute!(stdout(), Clear(ClearType::All)).unwrap();
 }
 
-#[allow(dead_code)]
 fn help() {
     println!("new, edit, view, mark, resource, remove, add. Type cmdhelp command to see how to use that specific command, e.g. cmdhelp new");
 }
@@ -170,6 +169,7 @@ fn main() {
                     _ => Object::None,
                 };
                 let name = get_next_arg(&mut parts, "Please enter an assignment name");
+                
                 view_assignment(object, name);
             }, 
             "mark" => {
@@ -179,6 +179,7 @@ fn main() {
                     "incomplete" => IsDone::Incomplete,
                     _ => IsDone::None
                 };
+                
                 mark_assignment(name, status);
             },
             "resource" => {
