@@ -5,8 +5,6 @@ use crossterm::{execute, terminal::{Clear, ClearType}};
 
 
 #[derive(Debug)]
-// enum that stores 2 states, done or incomplete
-// let assignment: IsDone = IsDone::Done
 enum IsDone {
     Done,
     Incomplete,
@@ -14,21 +12,12 @@ enum IsDone {
 }
 
 #[derive(Debug, PartialEq)]
-//enun that stores 3 states, assignment, subject, or none
-// none is when you dont enter anything correct, itll still return an object
 enum Object {
     Assignment,
     Subject,
     None,
 }
 
-// Struct groups info or data into one name
-//let brain_pop: Assignment = Assignment {
-//name : "brainpop"
-//subject : "Science"
-//due_date : "April_5th"
-//e_time : 10
-//}
 
 #[allow(dead_code)]
 struct Assignment {
@@ -45,7 +34,7 @@ struct Subject {
 }
 
 #[allow(dead_code)]
-//Creates a HachMap and inserts values for color codes to control text color
+//Creates a HashMap and inserts values for color codes to control text color
 fn get_colors() -> HashMap<&'static str, &'static str> {
     let mut colors = HashMap::new();
     colors.insert("black", "\x1b[30m");
@@ -122,10 +111,15 @@ fn remove(object: Object, name: String) {
     println!("Removing {:?} named {}", object, name);
 }
 
+fn add_subject(subject_name: String, color: &str) {
+    println!("Adding subject named {}{}", color, subject_name);
+}
+
 fn main() {
     loop {
         let input: String = get_command();
         let mut parts = input.split_whitespace();
+        let colors = get_colors();
         
         let command: String = match parts.next() {
             Some(cmd) => cmd.to_lowercase(),
@@ -202,8 +196,24 @@ fn main() {
 
                 remove(object, name);
             }
+            "add" => {
+                let subject_name: String = get_next_arg(&mut parts, "Please enter a subject name");
+                let color = match get_next_arg(&mut parts, "Please enter a color for the subject").as_str() {
+                    "red" => colors["red"],
+                    "black" => colors["black"],
+                    "green" => colors["green"],
+                    "yellow" => colors["yellow"],
+                    "blue" => colors["blue"],
+                    "magenta" => colors["magenta"],
+                    "cyan" => colors["cyan"],
 
+                    _ => colors["reset"],
+                };
 
+                add_subject(subject_name, color);
+            }
+
+            "help" => help(),
             "clear" => clear_terminal(),
             _ => println!("Unknown command")
         };         
