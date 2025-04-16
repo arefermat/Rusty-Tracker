@@ -13,3 +13,6 @@ This command creates a new assignment assimged to an subject with a due date and
 
 **Example** : new Science Assignment April_5th 10
 
+
+### edit
+This command lets you edit existing assignments or subjects, inckuding their name and details
