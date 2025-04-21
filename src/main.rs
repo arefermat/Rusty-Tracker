@@ -3,36 +3,16 @@ use std::collections::HashMap;
 use crossterm::{execute, terminal::{Clear, ClearType}};
 use serde::{Serialize, Deserialize};
 use std::fs;
+use std::path::Path;
 
-
-
-#[derive(Debug)]
-enum IsDone {
-    Done,
-    Incomplete,
-    None
-}
-
-#[derive(Debug, PartialEq)]
-enum Object {
-    Assignment,
-    Subject,
-    None,
-}
 
 #[derive(Serialize, Deserialize)]
 struct Assignment {
     name : String,
-    subject : String,
     due_date : String,
-    e_time : i32,
+    status : bool,
 }
 
-#[derive(Serialize, Deserialize)]
-struct Subject {
-    name : String,
-    color : &str,
-}
 
 //Creates a HashMap and inserts values for color codes to control text color
 fn get_colors() -> HashMap<&'static str, &'static str> {
@@ -61,7 +41,7 @@ fn help() {
 fn get_command() -> String {
     let mut command_input = String::new();
     
-    print!("todo//> ");
+    print!("<todo> ");
     io::stdout().flush().unwrap(); 
 
     io::stdin().read_line(&mut command_input).unwrap();
@@ -81,24 +61,41 @@ where I: Iterator<Item = &'a str>,
     }
 }
 
-// Placeholder functions
-fn new_assignment(subject: String, name: String, due_date: String, time_estimate: i32) {
-    println!("Creating new assignment {} with subject {} due on {} with estimated {} minutes", name, subject, due_date, time_estimate);
+// Save the list of todos to "todos.json"
+fn save_assignments(todos: &Vec<Assignment>) {
+    let json = serde_json::to_string_pretty(todos).unwrap();
+    fs::write("src/assignments.json", json).unwrap();
 }
 
-fn edit(object: Object, name: String, new_name: String) {
-    if object == Object::None {
-        println!("Please enter either '-a' or '-s'");
-        
+
+fn load_assignments() -> Vec<Assignment> {
+    if Path::new("src/assignments.json").exists() {
+        let data = fs::read_to_string("src/assignments.json").unwrap();
+        serde_json::from_str(&data).unwrap()
+    } else {
+        Vec::new() // Return an empty list if the file doesn't exist
     }
-    println!("Changing {:?} named {} to {}", object, name, new_name);
 }
 
-fn view_assignment(object: Object, name: String) {
-    println!("Viewing {:?} {}",object, name);
+fn add_assignment(name: String, due_date: String, status: bool) {
+    let mut todos = load_assignments();
+    todos.push(Assignment { name: name, due_date: due_date, status: status});
+    save_assignments(&todos);
 }
 
-fn mark_assignment(name: String, status: IsDone) {
+// Place Holder Functions
+fn edit(name: String, new_name: String) {
+    println!("Changing Assignement named {} to {}", name, new_name);
+}
+
+fn view() {
+    let assignments = load_assignments();
+    for assignment in assignments {
+        println!("Name : {}, Due : {}, Status : {}", assignment.name, assignment.due_date, if assignment.status {"x"} else {" "});
+    }
+}
+
+fn mark_assignment(name: String, status: bool) {
     println!("Marking assignment {} as {:?}", name, status);
 }
 
@@ -106,19 +103,16 @@ fn get_resources(subject: String) {
     println!("Providing resources for {}", subject);
 }
 
-fn remove(object: Object, name: String) {
-    println!("Removing {:?} named {}", object, name);
+fn remove(name: String) {
+    println!("Removing assignment named {}", name);
 }
 
-fn add_subject(subject_name: String, color: &str) {
-    println!("Adding subject named {}{}", color, subject_name);
-}
 
 fn main() {
     loop {
         let input: String = get_command();
         let mut parts = input.split_whitespace();
-        let colors = get_colors();
+        let _colors = get_colors();
         
         let command: String = match parts.next() {
             Some(cmd) => cmd.to_lowercase(),
@@ -127,57 +121,34 @@ fn main() {
                 continue;
             }
         };
-        /* 
-           new subject name due_date time_estimate
-           edit -(a/s) name new
-           view -(a/s) name
-           mark name (done/incomplete{%})
-           resource subject (add url)
-           remove -(a/s) name
-           add subject_name color
-        */
+
         match command.as_str() {
             "new" => {
-                let subject = get_next_arg(&mut parts, "Please provide a valid subject");
                 let name = get_next_arg(&mut parts, "Please provide an assignment name.");
                 let due_date = get_next_arg(&mut parts, "Please provide a due date.");
-                let time_estimate: i32 = match get_next_arg(&mut parts, "Please provide a time estimate.").parse() {
-                    Ok(num) => num,
-                    Err(_) => {
-                        println!("Time estimate must be a valid number.");
-                        continue;
-                    }
+                let status = match get_next_arg(&mut parts, "Please enter the assignment status").as_str() {
+                    "done" => true,
+                    "incomplete" => false,
+                    _ => false,
                 };
 
-                new_assignment(subject, name, due_date, time_estimate);
+                add_assignment(name, due_date, status);
             },
             "edit" => {
-                let object = match get_next_arg(&mut parts, "Please enter either '-a' or '-s'").as_str() {
-                    "-a" => Object::Assignment,
-                    "-s" => Object::Subject,
-                    _ => Object::None,
-                };
                 let name = get_next_arg(&mut parts, "Please enter a name that you want to edit");
                 let new_name = get_next_arg(&mut parts, "Please enter a new name");
                 
-                edit(object, name, new_name)
+                edit(name, new_name)
             },
             "view" => {
-                let object = match get_next_arg(&mut parts, "Please enter either '-a' or '-s'").as_str() {
-                    "-a" => Object::Assignment,
-                    "-s" => Object::Subject,
-                    _ => Object::None,
-                };
-                let name = get_next_arg(&mut parts, "Please enter an assignment name");
-                
-                view_assignment(object, name);
+                view();
             }, 
             "mark" => {
                 let name = get_next_arg(&mut parts, "Please enter an assignment name");
                 let status = match get_next_arg(&mut parts, "Please enter either done or incomplete").as_str() {
-                    "done" => IsDone::Done,
-                    "incomplete" => IsDone::Incomplete,
-                    _ => IsDone::None
+                    "done" => true,
+                    "incomplete" => false,
+                    _ => false,
                 };
                 
                 mark_assignment(name, status);
@@ -188,30 +159,10 @@ fn main() {
                 get_resources(subject);
             },
             "remove" => {
-                let object: Object = match get_next_arg(&mut parts, "Please enter either '-a' or '-s'").as_str() {
-                    "-a" => Object::Assignment,
-                    "-s" => Object::Subject,
-                    _ => Object::None,
-                };
+
                 let name: String = get_next_arg(&mut parts, "Please enter a name");
 
-                remove(object, name);
-            }
-            "add" => {
-                let subject_name: String = get_next_arg(&mut parts, "Please enter a subject name");
-                let color = match get_next_arg(&mut parts, "Please enter a color for the subject").as_str() {
-                    "red" => colors["red"],
-                    "black" => colors["black"],
-                    "green" => colors["green"],
-                    "yellow" => colors["yellow"],
-                    "blue" => colors["blue"],
-                    "magenta" => colors["magenta"],
-                    "cyan" => colors["cyan"],
-
-                    _ => colors["reset"],
-                };
-
-                add_subject(subject_name, color);
+                remove(name);
             }
 
             "help" => help(),
