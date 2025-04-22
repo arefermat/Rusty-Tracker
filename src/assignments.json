@@ -1,22 +1,7 @@
 [
   {
-    "name": "Brainpop",
-    "due_date": "April_5th",
+    "name": "test",
+    "due_date": "test",
     "status": true
-  },
-  {
-    "name": "MathHW",
-    "due_date": "April_25th",
-    "status": false
-  },
-  {
-    "name": "ScienceHW",
-    "due_date": "April_26th",
-    "status": false
-  },
-  {
-    "name": "Brainpop",
-    "due_date": "April_5th",
-    "status": false
   }
 ]
