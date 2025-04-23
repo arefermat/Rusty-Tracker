@@ -1,51 +1,20 @@
 use std::io::{self, Write, stdout};
 use std::collections::HashMap;
-use crossterm::{execute, terminal::{Clear, ClearType}};
+use crossterm::{execute, terminal::{Clear, ClearType}, cursor::MoveTo};
+use serde::{Serialize, Deserialize};
+use std::fs;
+use std::path::Path;
 
 
-
-#[derive(Debug)]
-// enum that stores 2 states, done or incomplete
-// let assignment: IsDone = IsDone::Done
-enum IsDone {
-    Done,
-    Incomplete,
-    None
-}
-
-#[derive(Debug, PartialEq)]
-//enun that stores 3 states, assignment, subject, or none
-// none is when you dont enter anything correct, itll still return an object
-enum Object {
-    Assignment,
-    Subject,
-    None,
-}
-
-// Struct groups info or data into one name
-//let brain_pop: Assignment = Assignment {
-//name : "brainpop"
-//subject : "Science"
-//due_date : "April_5th"
-//e_time : 10
-//}
-
-#[allow(dead_code)]
+#[derive(Serialize, Deserialize)]
 struct Assignment {
     name : String,
-    subject : String,
     due_date : String,
-    e_time : i32,
+    status : bool,
 }
 
-#[allow(dead_code)]
-struct Subject {
-    name : String,
-    color : String,
-}
 
-#[allow(dead_code)]
-//Creates a HachMap and inserts values for color codes to control text color
+//Creates a HashMap and inserts values for color codes to control text color
 fn get_colors() -> HashMap<&'static str, &'static str> {
     let mut colors = HashMap::new();
     colors.insert("black", "\x1b[30m");
@@ -61,14 +30,29 @@ fn get_colors() -> HashMap<&'static str, &'static str> {
 }
 
 fn clear_terminal() {
-    execute!(stdout(), Clear(ClearType::All)).unwrap();
+    execute!(stdout(), Clear(ClearType::All), MoveTo(0,0)).unwrap();
+}
+
+fn help() {
+    println!("new, edit, view, mark, remove. Type cmdhelp command to see how to use that specific command, e.g. cmdhelp new");
+}
+
+fn cmdhelp(command: &str) {
+    match command {
+        "new" => println!("new ASSIGNMENT_NAME (one word) DUE_DATE (one word) STATUS_OF_ASSIGNMENT ('done' or 'incomplete')"),
+        "edit" => println!("edit ASSIGNMENT_NAME (existing assignment) THING_TO_EDIT ('name' or 'due_date') CHANGE_TO (pretty self explanatory)"),
+        "view" => println!("view (view all assignments)"),
+        "mark" => println!("mark ASSIGNMENT_NAME (existing assignment) STATUS_OF_ASSIGNMENT ('done' or 'incomplete')"),
+        "remove" => println!("remove ASSIGNMENT_NAME (existing assignment)"),
+        _ => println!("That command does not exist, so I literally cannot help you bud. :|")
+    }
 }
 
 //Takes input and trims whitespace
 fn get_command() -> String {
     let mut command_input = String::new();
     
-    print!("todo//> ");
+    print!("<todo> ");
     io::stdout().flush().unwrap(); 
 
     io::stdin().read_line(&mut command_input).unwrap();
@@ -83,44 +67,97 @@ where I: Iterator<Item = &'a str>,
         Some(arg) => arg.to_string(),
         None => {
             println!("{}", error_message);
-            get_command() 
+            String::new()
         }
     }
 }
 
-// Placeholder functions
-fn new_assignment(subject: String, name: String, due_date: String, time_estimate: i32) {
-    println!("Creating new assignment {} with subject {} due on {} with estimated {} minutes", name, subject, due_date, time_estimate);
+// Save the list of todos to "todos.json"
+fn save_assignments(todos: &Vec<Assignment>) {
+    let json = serde_json::to_string_pretty(todos).unwrap();
+    fs::write("src/assignments.json", json).unwrap();
 }
 
-fn edit(object: Object, name: String, new_name: String) {
-    if object == Object::None {
-        println!("Please enter either '-a' or '-s'");
-        
+
+fn load_assignments() -> Vec<Assignment> {
+    if Path::new("src/assignments.json").exists() {
+        let data = fs::read_to_string("src/assignments.json").unwrap();
+        serde_json::from_str(&data).unwrap()
+    } else {
+        Vec::new() // Return an empty list if the file doesn't exist
     }
-    println!("Changing {:?} named {} to {}", object, name, new_name);
 }
 
-fn view_assignment(object: Object, name: String) {
-    println!("Viewing {:?} {}",object, name);
+fn add_assignment(name: String, due_date: String, status: bool) {
+    let mut todos = load_assignments();
+    println!("{}Created assignment with name \"{}\"{}", get_colors()["green"], name, get_colors()["reset"]);
+    todos.push(Assignment { name: name, due_date: due_date, status: status});
+    save_assignments(&todos);
 }
 
-fn mark_assignment(name: String, status: IsDone) {
-    println!("Marking assignment {} as {:?}", name, status);
+// Place Holder Functions
+fn edit(name: String, change: &str, new_change: String) {
+    if change == "changed assignment" {
+        println!("Please enter either 'name', or 'due_date'");
+    }
+    let mut assignments = load_assignments();
+    if let Some(assignment) = assignments.iter_mut().find(|t| t.name == name) {
+        match change {
+            "name" => {
+                println!("Changed name from '{}' to '{}'", name, new_change);
+                assignment.name = new_change.to_string();
+            },
+            "due_date" => {
+                println!("Changed due date to '{}'", new_change);
+                assignment.due_date = new_change.to_string();
+            },
+            _ => println!("There is no atrribute '{}' with assignments", change),
+        };
+        save_assignments(&assignments);
+    } else {println!("{}Couldn't find an assignment name with \"{}\"{}", get_colors()["red"], name, get_colors()["reset"])}
 }
 
-fn get_resources(subject: String) {
-    println!("Providing resources for {}", subject);
+fn view() {
+    let assignments = load_assignments();
+    for assignment in assignments {
+        println!("Name : {}, Due : {}, Status : {}", assignment.name, assignment.due_date, if assignment.status {"x"} else {" "});
+    }
 }
 
-fn remove(object: Object, name: String) {
-    println!("Removing {:?} named {}", object, name);
+fn mark_assignment(name: String, status: bool) {
+    let mut assignments = load_assignments();
+    if let Some(assignment) = assignments.iter_mut().find(|t| t.name == name) {
+        assignment.status = status;
+
+
+        save_assignments(&assignments);
+    }
 }
+
+
+fn remove(name: &str) {
+    let mut assignments = load_assignments();
+
+    let original_len = assignments.len();
+
+    // Remove all todos where the title matches exactly
+    assignments.retain(|todo| todo.name != name);
+
+    if assignments.len() < original_len {
+        println!("{}Removed \"{}\"{}", get_colors()["red"], name, get_colors()["reset"]);
+        save_assignments(&assignments);
+    } else {
+        println!("{}No assignment found with the title \"{}\"{}",get_colors()["red"], name, get_colors()["reset"]);
+    }
+}
+
+
 
 fn main() {
     loop {
         let input: String = get_command();
         let mut parts = input.split_whitespace();
+        let _colors = get_colors();
         
         let command: String = match parts.next() {
             Some(cmd) => cmd.to_lowercase(),
@@ -129,78 +166,83 @@ fn main() {
                 continue;
             }
         };
-        /* 
-           new subject name due_date time_estimate
-           edit -(a/s) name new
-           view -(a/s) name
-           mark name (done/incomplete{%})
-           resource subject (add url)
-           remove -(a/s) name
-           add subject_name color
-        */
+
         match command.as_str() {
             "new" => {
-                let subject = get_next_arg(&mut parts, "Please provide a valid subject");
                 let name = get_next_arg(&mut parts, "Please provide an assignment name.");
+                if name.is_empty() {
+                    continue;
+                }
                 let due_date = get_next_arg(&mut parts, "Please provide a due date.");
-                let time_estimate: i32 = match get_next_arg(&mut parts, "Please provide a time estimate.").parse() {
-                    Ok(num) => num,
-                    Err(_) => {
-                        println!("Time estimate must be a valid number.");
-                        continue;
-                    }
+                if due_date.is_empty() {
+                    continue;
+                }
+                let status = match get_next_arg(&mut parts, "Please enter the assignment status").as_str() {
+                    "done" => true,
+                    "incomplete" => false,
+                    _ => false,
                 };
 
-                new_assignment(subject, name, due_date, time_estimate);
+                add_assignment(name, due_date, status);
             },
             "edit" => {
-                let object = match get_next_arg(&mut parts, "Please enter either '-a' or '-s'").as_str() {
-                    "-a" => Object::Assignment,
-                    "-s" => Object::Subject,
-                    _ => Object::None,
-                };
                 let name = get_next_arg(&mut parts, "Please enter a name that you want to edit");
-                let new_name = get_next_arg(&mut parts, "Please enter a new name");
+                if name.is_empty() {
+                    continue;
+                }
+                let change = match get_next_arg(&mut parts, "Enter what part of the assignment you want to edit").as_str() {
+                    "name" => "name",
+                    "due_date" => "due_date",
+                    _ => "changed assignment"
+                };
+                if change.is_empty() {
+                    continue;
+                }
+                let new_change = get_next_arg(&mut parts, "Enter what you would like to change this to");
+                if new_change.is_empty() {
+                    continue;
+                }
                 
-                edit(object, name, new_name)
+                edit(name, change, new_change)
             },
             "view" => {
-                let object = match get_next_arg(&mut parts, "Please enter either '-a' or '-s'").as_str() {
-                    "-a" => Object::Assignment,
-                    "-s" => Object::Subject,
-                    _ => Object::None,
-                };
-                let name = get_next_arg(&mut parts, "Please enter an assignment name");
-                view_assignment(object, name);
+                view();
             }, 
             "mark" => {
                 let name = get_next_arg(&mut parts, "Please enter an assignment name");
+                if name.is_empty() {
+                    continue;
+                }
                 let status = match get_next_arg(&mut parts, "Please enter either done or incomplete").as_str() {
-                    "done" => IsDone::Done,
-                    "incomplete" => IsDone::Incomplete,
-                    _ => IsDone::None
+                    "done" => true,
+                    "incomplete" => false,
+                    _ => false,
                 };
+                
                 mark_assignment(name, status);
             },
-            "resource" => {
-                let subject = get_next_arg(&mut parts, "Please enter a subject");
-
-                get_resources(subject);
-            },
             "remove" => {
-                let object: Object = match get_next_arg(&mut parts, "Please enter either '-a' or '-s'").as_str() {
-                    "-a" => Object::Assignment,
-                    "-s" => Object::Subject,
-                    _ => Object::None,
-                };
-                let name: String = get_next_arg(&mut parts, "Please enter a name");
 
-                remove(object, name);
+                let name: String = get_next_arg(&mut parts, "Please enter a name");
+                if name.is_empty() {
+                    continue;
+                }
+
+                remove(name.as_str());
+            }
+            "cmdhelp" => {
+                let command = get_next_arg(&mut parts, "Please enter a command to learn about");
+                if command.is_empty() {
+                    continue;
+                }
+
+                cmdhelp(command.as_str());
             }
 
-
+            "help" => help(),
             "clear" => clear_terminal(),
             _ => println!("Unknown command")
-        };         
+        };     
+            
     };
 }
