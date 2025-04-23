@@ -91,10 +91,17 @@ fn edit(name: String, change: &str, new_change: String) {
     let mut assignments = load_assignments();
     if let Some(assignment) = assignments.iter_mut().find(|t| t.name == name) {
         match change {
-            "name" => assignment.name = new_change.to_string(),
-            "due_date" => assignment.due_date = new_change.to_string(),
+            "name" => {
+                println!("Changed name from '{}' to '{}'", name, new_change);
+                assignment.name = new_change.to_string();
+            },
+            "due_date" => {
+                println!("Changed due date to '{}'", new_change);
+                assignment.due_date = new_change.to_string();
+            },
             _ => println!("There is no atrribute '{}' with any assignments", change),
         };
+        save_assignments(&assignments);
     }
     println!("Changing Assignement named {}'s {} to {}", name, change, new_change);
 }
