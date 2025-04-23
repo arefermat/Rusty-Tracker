@@ -1,6 +1,6 @@
 use std::io::{self, Write, stdout};
 use std::collections::HashMap;
-use crossterm::{execute, terminal::{Clear, ClearType}};
+use crossterm::{execute, terminal::{Clear, ClearType}, cursor::MoveTo};
 use serde::{Serialize, Deserialize};
 use std::fs;
 use std::path::Path;
@@ -30,11 +30,22 @@ fn get_colors() -> HashMap<&'static str, &'static str> {
 }
 
 fn clear_terminal() {
-    execute!(stdout(), Clear(ClearType::All)).unwrap();
+    execute!(stdout(), Clear(ClearType::All), MoveTo(0,0)).unwrap();
 }
 
 fn help() {
-    println!("new, edit, view, mark, resource, remove, add. Type cmdhelp command to see how to use that specific command, e.g. cmdhelp new");
+    println!("new, edit, view, mark, remove. Type cmdhelp command to see how to use that specific command, e.g. cmdhelp new");
+}
+
+fn cmdhelp(command: &str) {
+    match command {
+        "new" => println!("new ASSIGNMENT_NAME (one word) DUE_DATE (one word) STATUS_OF_ASSIGNMENT ('done' or 'incomplete')"),
+        "edit" => println!("edit ASSIGNMENT_NAME (existing assignment) THING_TO_EDIT ('name' or 'due_date') CHANGE_TO (pretty self explanatory)"),
+        "view" => println!("view (view all assignments)"),
+        "mark" => println!("mark ASSIGNMENT_NAME (existing assignment) STATUS_OF_ASSIGNMENT ('done' or 'incomplete')"),
+        "remove" => println!("remove ASSIGNMENT_NAME (existing assignment)"),
+        _ => println!("That command does not exist, so I literally cannot help you bud. :|")
+    }
 }
 
 //Takes input and trims whitespace
@@ -56,7 +67,7 @@ where I: Iterator<Item = &'a str>,
         Some(arg) => arg.to_string(),
         None => {
             println!("{}", error_message);
-            get_command() 
+            String::new()
         }
     }
 }
@@ -79,13 +90,14 @@ fn load_assignments() -> Vec<Assignment> {
 
 fn add_assignment(name: String, due_date: String, status: bool) {
     let mut todos = load_assignments();
+    println!("{}Created assignment with name \"{}\"{}", get_colors()["green"], name, get_colors()["reset"]);
     todos.push(Assignment { name: name, due_date: due_date, status: status});
     save_assignments(&todos);
 }
 
 // Place Holder Functions
 fn edit(name: String, change: &str, new_change: String) {
-    if change == "je doma" {
+    if change == "changed assignment" {
         println!("Please enter either 'name', or 'due_date'");
     }
     let mut assignments = load_assignments();
@@ -99,10 +111,10 @@ fn edit(name: String, change: &str, new_change: String) {
                 println!("Changed due date to '{}'", new_change);
                 assignment.due_date = new_change.to_string();
             },
-            _ => println!("There is no atrribute '{}' with any assignments", change),
+            _ => println!("There is no atrribute '{}' with assignments", change),
         };
         save_assignments(&assignments);
-    }
+    } else {println!("{}Couldn't find an assignment name with \"{}\"{}", get_colors()["red"], name, get_colors()["reset"])}
 }
 
 fn view() {
@@ -113,16 +125,32 @@ fn view() {
 }
 
 fn mark_assignment(name: String, status: bool) {
-    println!("Marking assignment {} as {:?}", name, status);
+    let mut assignments = load_assignments();
+    if let Some(assignment) = assignments.iter_mut().find(|t| t.name == name) {
+        assignment.status = status;
+
+
+        save_assignments(&assignments);
+    }
 }
 
-fn get_resources(subject: String) {
-    println!("Providing resources for {}", subject);
+
+fn remove(name: &str) {
+    let mut assignments = load_assignments();
+
+    let original_len = assignments.len();
+
+    // Remove all todos where the title matches exactly
+    assignments.retain(|todo| todo.name != name);
+
+    if assignments.len() < original_len {
+        println!("{}Removed \"{}\"{}", get_colors()["red"], name, get_colors()["reset"]);
+        save_assignments(&assignments);
+    } else {
+        println!("{}No assignment found with the title \"{}\"{}",get_colors()["red"], name, get_colors()["reset"]);
+    }
 }
 
-fn remove(name: String) {
-    println!("Removing assignment named {}", name);
-}
 
 
 fn main() {
@@ -142,7 +170,13 @@ fn main() {
         match command.as_str() {
             "new" => {
                 let name = get_next_arg(&mut parts, "Please provide an assignment name.");
+                if name.is_empty() {
+                    continue;
+                }
                 let due_date = get_next_arg(&mut parts, "Please provide a due date.");
+                if due_date.is_empty() {
+                    continue;
+                }
                 let status = match get_next_arg(&mut parts, "Please enter the assignment status").as_str() {
                     "done" => true,
                     "incomplete" => false,
@@ -153,12 +187,21 @@ fn main() {
             },
             "edit" => {
                 let name = get_next_arg(&mut parts, "Please enter a name that you want to edit");
+                if name.is_empty() {
+                    continue;
+                }
                 let change = match get_next_arg(&mut parts, "Enter what part of the assignment you want to edit").as_str() {
                     "name" => "name",
                     "due_date" => "due_date",
-                    _ => "je doma"
+                    _ => "changed assignment"
                 };
+                if change.is_empty() {
+                    continue;
+                }
                 let new_change = get_next_arg(&mut parts, "Enter what you would like to change this to");
+                if new_change.is_empty() {
+                    continue;
+                }
                 
                 edit(name, change, new_change)
             },
@@ -167,6 +210,9 @@ fn main() {
             }, 
             "mark" => {
                 let name = get_next_arg(&mut parts, "Please enter an assignment name");
+                if name.is_empty() {
+                    continue;
+                }
                 let status = match get_next_arg(&mut parts, "Please enter either done or incomplete").as_str() {
                     "done" => true,
                     "incomplete" => false,
@@ -175,21 +221,28 @@ fn main() {
                 
                 mark_assignment(name, status);
             },
-            "resource" => {
-                let subject = get_next_arg(&mut parts, "Please enter a subject");
-
-                get_resources(subject);
-            },
             "remove" => {
 
                 let name: String = get_next_arg(&mut parts, "Please enter a name");
+                if name.is_empty() {
+                    continue;
+                }
 
-                remove(name);
+                remove(name.as_str());
+            }
+            "cmdhelp" => {
+                let command = get_next_arg(&mut parts, "Please enter a command to learn about");
+                if command.is_empty() {
+                    continue;
+                }
+
+                cmdhelp(command.as_str());
             }
 
             "help" => help(),
             "clear" => clear_terminal(),
             _ => println!("Unknown command")
-        };         
+        };     
+            
     };
 }

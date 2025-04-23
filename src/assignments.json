@@ -1,12 +1,7 @@
 [
   {
-    "name": "test",
-    "due_date": "test",
-    "status": true
-  },
-  {
     "name": "Math",
-    "due_date": "May_1st",
+    "due_date": "April_6th",
     "status": false
   }
 ]
