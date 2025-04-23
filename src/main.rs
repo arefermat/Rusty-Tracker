@@ -103,7 +103,6 @@ fn edit(name: String, change: &str, new_change: String) {
         };
         save_assignments(&assignments);
     }
-    println!("Changing Assignement named {}'s {} to {}", name, change, new_change);
 }
 
 fn view() {
