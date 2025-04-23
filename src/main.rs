@@ -84,8 +84,19 @@ fn add_assignment(name: String, due_date: String, status: bool) {
 }
 
 // Place Holder Functions
-fn edit(name: String, new_name: String) {
-    println!("Changing Assignement named {} to {}", name, new_name);
+fn edit(name: String, change: &str, new_change: String) {
+    if change == "je doma" {
+        println!("Please enter either 'name', or 'due_date'");
+    }
+    let mut assignments = load_assignments();
+    if let Some(assignment) = assignments.iter_mut().find(|t| t.name == name) {
+        match change {
+            "name" => assignment.name = new_change.to_string(),
+            "due_date" => assignment.due_date = new_change.to_string(),
+            _ => println!("There is no atrribute '{}' with any assignments", change),
+        };
+    }
+    println!("Changing Assignement named {}'s {} to {}", name, change, new_change);
 }
 
 fn view() {
@@ -136,9 +147,14 @@ fn main() {
             },
             "edit" => {
                 let name = get_next_arg(&mut parts, "Please enter a name that you want to edit");
-                let new_name = get_next_arg(&mut parts, "Please enter a new name");
+                let change = match get_next_arg(&mut parts, "Enter what part of the assignment you want to edit").as_str() {
+                    "name" => "name",
+                    "due_date" => "due_date",
+                    _ => "je doma"
+                };
+                let new_change = get_next_arg(&mut parts, "Enter what you would like to change this to");
                 
-                edit(name, new_name)
+                edit(name, change, new_change)
             },
             "view" => {
                 view();
