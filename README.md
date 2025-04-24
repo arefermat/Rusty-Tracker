@@ -2,7 +2,9 @@
 A todo tracker that lists and tracks current, past, and future assignments under subjects. A very simple, efficient and fast CLI using Rust.
 
 ## Contact and Bugs
+
 If you find any bugs of any kind, please let me know or open an issue with a descriptive name and details about the bug.
+
 -------------------------------------------------------------------------------------------------------------------------------------------
 
 ## Commands
