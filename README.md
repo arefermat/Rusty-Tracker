@@ -3,6 +3,7 @@ A todo tracker that lists and tracks current, past, and future assignments under
 
 ## Contact and Bugs
 If you find any bugs of any kind, please let me know or open an issue with a descriptive name and detials about the bug.
+-------------------------------------------------------------------------------------------------------------------------------------------
 
 ## Commands
 
@@ -10,6 +11,8 @@ If you find any bugs of any kind, please let me know or open an issue with a des
 Use this command when first trying out, prints commands and helps you figure our how to use commands.
 #### Note
 You can also use cmdhelp COMMAND to see details on that specific command.
+
+------------------------------------------------------------------------------------------------------------------------------------------
 
 ### new
 This command creates a new assignment assimged to an subject with a due date and an estimated time to complete.
