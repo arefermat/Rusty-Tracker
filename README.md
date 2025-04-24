@@ -7,14 +7,14 @@ If you find any bugs of any kind, please let me know or open an issue with a des
 
 ## Commands
 
-### help
+## help
 Use this command when first trying out, prints commands and helps you figure our how to use commands.
-#### Note
+### Note
 You can also use cmdhelp COMMAND to see details on that specific command.
 
 ------------------------------------------------------------------------------------------------------------------------------------------
 
-### new
+## new
 This command creates a new assignment assimged to an subject with a due date and an estimated time to complete.
 #### Subcommands
 1. **Assignment name** : enter a unique name for the assignment
@@ -23,8 +23,9 @@ This command creates a new assignment assimged to an subject with a due date and
 
 **Example** : new Assignment April_5th incomplete
 
+-----------------------------------------------------------------------------------------------------------------------------------------
 
-### edit
+## edit
 This command lets you edit existing assignments, including their name and due_date.
 #### Subcommands
 1. **Assignment name** : enter an existing assignment name to target
@@ -33,7 +34,9 @@ This command lets you edit existing assignments, including their name and due_da
 
 **Example** : edit Assignment due_date Aprilt_6th
 
-### mark
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+## mark
 This command allows you to change and choose whether a specific assignment is marked done or incomplete.
 #### Subcommands
 1. **Assignment name** : enter an existing assignment name to target
@@ -41,14 +44,18 @@ This command allows you to change and choose whether a specific assignment is ma
 
 **Example** : mark Assignment done
 
-### view
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+## view
 This command lets you view all existing assignments.
 #### Subcommands
 **None** : this command contains no subcommands
 
 **Example** : view
 
-### remove
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+## remove
 This command allows you to remove entire assignments, beware, these changes are permanent.
 #### Subcommands
 1. **Assignment name** : enter an existing assignment name to target
